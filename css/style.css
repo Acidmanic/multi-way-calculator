@@ -9,3 +9,18 @@
 .output-box-calculating {
     visibility: visible;
 }
+
+div#div-circuit svg {
+    width: 100% !important;
+
+}
+
+.input-appendant{
+    width: 48px;
+}
+
+.input-appendant-wide{
+    width: 96px;
+}
+
+.cursor-pointer{cursor: pointer;}

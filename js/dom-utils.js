@@ -47,6 +47,10 @@ function base64ToObject(objJsonB64) {
     return obj;
 }
 
+const OUTPUT_MARKER_NORMAL = "outputmarker input-appendant input-group-text  bg-primary text-white cursor-pointer";
+const OUTPUT_MARKER_INPUTONLY = "outputmarker input-appendant input-group-text text-info";
+const OUTPUT_MARKER_OUTPUT = "outputmarker input-appendant input-group-text bg-success text-white";
+
 function createInputs(parameters, changeProcessMethodName, selectCallBack) {
 
     var elements = '';
@@ -66,7 +70,7 @@ function createInputs(parameters, changeProcessMethodName, selectCallBack) {
 
         let dropId = 'drp-units-' + param.name;
 
-        let formLabel = '<label for="' + id + '">' + param.displayName + '<small> (' + label + ')</small>' + '</label>';
+        let formLabel = '<label for="' + id + '">' + param.displayName + '</label>';
 
         let paramsB64 = objectToBase64(param);
 
@@ -78,7 +82,7 @@ function createInputs(parameters, changeProcessMethodName, selectCallBack) {
 
         let input = '<input class="form-control" onkeypress="' + call + '" onchange="' + call + '" type="number" id="' + id + '"' + ' value="' + param.defaultValue + '" />';
 
-        let drop = '<select id="' + dropId + '" class="form-control" style="width:16px" onchange="' + call + '">';
+        let drop = '<select id="' + dropId + '" class="input-appendant-wide input-group-text" onchange="' + call + '">';
 
         for (let uIdx = 0; uIdx < param.units.length; uIdx++) {
 
@@ -92,19 +96,22 @@ function createInputs(parameters, changeProcessMethodName, selectCallBack) {
         }
 
         drop += '</select>';
+
         let outputId = 'mrk-output-' + label;
 
+        let selectHandler = 'setSelected(' + qt + label + qt + ');' + selectCallBack + '(' + qt + label + qt + ');';
 
-        let selectHandler = '(function(){setSelected(' + qt + label + qt + '),' + selectCallBack + '(' + qt + label + qt + ');})()';
+        let outputMarker = '<div label="' + label + '" id="' + outputId + '" class="' + OUTPUT_MARKER_NORMAL + '" style="font-size: 1.2rem;"></div>';
 
-        let outputMarker = '<div id="' + outputId + '" onclick=' + selectHandler + ' class="outputmarker input-group-text text-success" style="width:48px; font-size: 1.2rem;"></div>';
+        if (param.calculationSupported) {
+
+            outputMarker = '<div calculatable data-toggle="tooltip" title="Click to Calculate ``' + param.displayName + '``" label="' + label + '" id="' + outputId + '" onclick=' + selectHandler + ' class="' + OUTPUT_MARKER_NORMAL + '" style="font-size: 1.2rem;"></div>';
+        }
 
         elements += '<div class="row py-1 form-group input-group input-group-append">' + formLabel + outputMarker + input + drop + '</div>\n';
 
         lastParameterName = label;
     }
-
-
 
     return {
         content: elements,
@@ -120,13 +127,22 @@ function setSelected(parameterName) {
 
     for (let index = 0; index < found.length; index++) {
 
-        found[index].innerHTML = ' ';
 
+        let unSelectedClass = OUTPUT_MARKER_INPUTONLY;
+
+        if (found[index].getAttributeNode('calculatable')) {
+
+            unSelectedClass = OUTPUT_MARKER_NORMAL;
+        }
+
+        found[index].innerHTML = '<small>' + found[index].getAttribute('label') + '</small>';
+        found[index].setAttribute('class', unSelectedClass);
     }
 
     let outputId = 'mrk-output-' + parameterName;
     let element = document.getElementById(outputId);
     if (element) {
         element.innerHTML = icons.chevronDoubleRight;
+        element.setAttribute('class', OUTPUT_MARKER_OUTPUT);
     }
 }

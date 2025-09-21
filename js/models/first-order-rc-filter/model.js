@@ -1,8 +1,9 @@
 
-function createOhmExample() {
+function createFirstOrderRcFilter() {
 
     return {
-        name: 'Ohm Example',
+        name: 'First Order RC Filter (-20db/decade)',
+        circuit:FIRST_ORDER_FILTER_ICON,
         parameters: [
             {
                 name: 'R',
@@ -21,48 +22,52 @@ function createOhmExample() {
                         coEfficient: 1000000
                     }
                 ],
-                defaultValue: 10,
+                defaultValue: 5,
                 defaultUnit: 1000
             },
             {
-                name: 'I',
-                displayName:'Current',
+                name: 'C',
+                displayName:'Capacitance',
                 units: [
                     {
-                        name: 'A',
+                        name: 'F',
                         coEfficient: 1
                     },
                     {
-                        name: 'mA',
+                        name: 'mF',
                         coEfficient: 0.001
                     },
                     {
-                        name: '&mu;A',
+                        name: '&mu;F',
                         coEfficient: 0.000001
+                    },
+                    {
+                        name: 'nF',
+                        coEfficient: 0.000000001
+                    },
+                    {
+                        name: 'pF',
+                        coEfficient: 0.000000000001
                     }
                 ],
                 defaultValue: 100,
-                defaultUnit: 0.001
+                defaultUnit: 0.000000001
             },
             {
-                name: 'V',
-                displayName:'Voltage',
+                name: 'F',
+                displayName:'Cut Off Frequency',
                 units: [
                     {
-                        name: 'kV',
+                        name: 'MH',
+                        coEfficient: 1000000
+                    },
+                    {
+                        name: 'kH',
                         coEfficient: 1000
                     },
                     {
-                        name: 'V',
+                        name: 'H',
                         coEfficient: 1
-                    },
-                    {
-                        name: 'mV',
-                        coEfficient: 0.001
-                    },
-                    {
-                        name: '&mu;V',
-                        coEfficient: 0.000001
                     }
                 ],
                 defaultValue: 1,
@@ -72,21 +77,20 @@ function createOhmExample() {
         calculate: function (params) {
 
             var r = readRawValue(params['R']);
-            var i = readRawValue(params['I']);
-            var v = readRawValue(params['V']);
+            var c = readRawValue(params['C']);
+            var f = readRawValue(params['F']);
+
             var result = null;
-            if (r && i) {
-                v = i * r;
-                var vParam = findParamsFor(this,'V');
-                result = unitBack(v, vParam);
-            } else if (v && r) {
-                i = v / r;
-                var iParam = findParamsFor(this,'I');
-                result = unitBack(i, iParam);
-            } else if (v && i) {
-                r = v / i;
-                var rParam = findParamsFor(this,'R');
-                result = unitBack(r, rParam);
+
+            if (r && c) {
+                f = 1/(2*Math.PI*r*c);
+                result = packResult(this,'F',f);
+            } else if (f && r) {
+                c = 1/(2*Math.PI*r*f);
+                result = packResult(this,'C',c);
+            } else if (f && c) {
+                r = 1/(2*Math.PI*c*f);
+                result = packResult(this,'R',r);
             }
             if (result) {
                 return { supported: true, result: result };

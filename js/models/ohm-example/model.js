@@ -1,8 +1,9 @@
 
-function createFirstOrderRcFilter() {
+function createOhmExample() {
 
     return {
-        name: 'First Order RC Filter',
+        name: 'Ohm Example',
+        circuit:OHM_LAW_ICON,
         parameters: [
             {
                 name: 'R',
@@ -21,52 +22,48 @@ function createFirstOrderRcFilter() {
                         coEfficient: 1000000
                     }
                 ],
-                defaultValue: 5,
+                defaultValue: 10,
                 defaultUnit: 1000
             },
             {
-                name: 'C',
-                displayName:'Capacitance',
+                name: 'I',
+                displayName:'Current',
                 units: [
                     {
-                        name: 'F',
+                        name: 'A',
                         coEfficient: 1
                     },
                     {
-                        name: 'mF',
+                        name: 'mA',
                         coEfficient: 0.001
                     },
                     {
-                        name: '&mu;F',
+                        name: '&mu;A',
                         coEfficient: 0.000001
-                    },
-                    {
-                        name: 'nF',
-                        coEfficient: 0.000000001
-                    },
-                    {
-                        name: 'pF',
-                        coEfficient: 0.000000000001
                     }
                 ],
                 defaultValue: 100,
-                defaultUnit: 0.000000001
+                defaultUnit: 0.001
             },
             {
-                name: 'F',
-                displayName:'Frequency',
+                name: 'V',
+                displayName:'Voltage',
                 units: [
                     {
-                        name: 'MH',
-                        coEfficient: 1000000
-                    },
-                    {
-                        name: 'kH',
+                        name: 'kV',
                         coEfficient: 1000
                     },
                     {
-                        name: 'H',
+                        name: 'V',
                         coEfficient: 1
+                    },
+                    {
+                        name: 'mV',
+                        coEfficient: 0.001
+                    },
+                    {
+                        name: '&mu;V',
+                        coEfficient: 0.000001
                     }
                 ],
                 defaultValue: 1,
@@ -76,19 +73,17 @@ function createFirstOrderRcFilter() {
         calculate: function (params) {
 
             var r = readRawValue(params['R']);
-            var c = readRawValue(params['C']);
-            var f = readRawValue(params['F']);
-
+            var i = readRawValue(params['I']);
+            var v = readRawValue(params['V']);
             var result = null;
-
-            if (r && c) {
-                f = 1/(2*Math.PI*r*c);
-                result = packResult(this,'F',f);
-            } else if (f && r) {
-                c = 1/(2*Math.PI*r*f);
-                result = packResult(this,'C',c);
-            } else if (f && c) {
-                r = 1/(2*Math.PI*c*f);
+            if (r && i) {
+                v = i * r;
+                result = packResult(this,'V',v);
+            } else if (v && r) {
+                i = v / r;
+                result = packResult(this,'I',i);
+            } else if (v && i) {
+                r = v / i;
                 result = packResult(this,'R',r);
             }
             if (result) {
