@@ -1,0 +1,202 @@
+<html>
+
+<head>
+    <title>Calculate</title>
+</head>
+
+<body data-bs-theme="dark">
+    <link href="bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <script src="bootstrap/bootstrap.min.js"></script>
+    <script src="js/model-utils.js"></script>
+    <script src="js/ohm-example.js"></script>
+    <script src="js/first-order-rc-filter.js"></script>
+    <script src="js/dom-utils.js"></script>
+    <script src="js/models-index.js"></script>
+
+    <script lang="js">
+
+
+        var modelsByName = {};
+
+        var parametersUpdateObject = {};
+        var calculatingParameterName = '';
+
+        var paramChanges = {};
+        var calcModel = {};
+
+        function getSelectedUnit(param, unitCoEfficient) {
+
+            for (let index = 0; index < param.units.length; index++) {
+
+                const u = param.units[index];
+
+                if (u.coEfficient == unitCoEfficient) return u;
+            }
+            return { name: '?', coEfficient: 1 };
+        }
+
+
+        function pushChange(param, value, unitCoEfficient) {
+
+            const u = getSelectedUnit(param, unitCoEfficient);
+
+            parametersUpdateObject[param.name] = {
+                value: parseFloat(value),
+                unit: u
+            };
+
+
+            var model = {};
+
+            for (let index = 0; index < calcModel.parameters.length; index++) {
+
+                const parameter = calcModel.parameters[index];
+
+                if (parameter.name != calculatingParameterName) {
+
+                    const updatedP = parametersUpdateObject[parameter.name];
+
+                    if (updatedP) {
+                        const p = {
+                            value: updatedP.value,
+                            unit: updatedP.unit
+                        };
+
+                        model[parameter.name] = p;
+                    }
+                }
+
+
+            }
+
+            console.log('call calc for', model);
+
+            let calculated = calcModel.calculate(model);
+
+            console.log(calculated);
+
+            if (calculated.supported) {
+
+                writeIntoInput(calculated.result.parameterName, calculated.result.value, calculated.result.unit.coEfficient);
+
+
+                parametersUpdateObject[calculated.result.parameterName] = {
+                    value: calculated.result.value,
+                    unit: calculated.result.unit
+                };
+            }
+
+        }
+
+        function changeProcess(value, unitCoEfficient, elementName, param) {
+
+            let obj = base64ToObject(param);
+
+            pushChange(obj, value, unitCoEfficient);
+        }
+
+        function onOutputselected(paramName) {
+
+            console.log('param selected', paramName);
+            calculatingParameterName = paramName;
+        }
+
+        function initializeChanges() {
+            for (let index = 0; index < calcModel.parameters.length; index++) {
+
+                const param = calcModel.parameters[index];
+
+                pushChange(param, param.defaultValue, param.defaultUnit);
+            }
+        }
+
+        function initializeModel() {
+
+            const select = document.getElementById('slc-models');
+
+            let modelName = select.value;
+
+            const m = modelsByName[modelName];
+
+            if (m) {
+
+                console.log('selected model:', m);
+
+                writeInto('spnTitle', m.name);
+
+                var inputs = createInputs(m.parameters, 'changeProcess', 'onOutputselected');
+
+                console.log(inputs);
+
+                writeInto("divParameters", inputs.content);
+
+                calcModel = m;
+
+                inputs.reset();
+
+                initializeChanges();
+            }
+
+        }
+
+        function initializeModels() {
+
+            var allModules = createAllModels();
+
+            var options = '';
+
+            const qt = "'";
+
+            for (let index = 0; index < allModules.length; index++) {
+
+                const m = allModules[index];
+
+                modelsByName[m.name] = m;
+
+                options += '<option value="' + m.name + '">' + m.name + '</option>';
+
+            }
+            const select = document.getElementById('slc-models');
+
+            select.innerHTML = options;
+        }
+
+        function initializeDefaultModel() {
+
+            const select = document.getElementById('slc-models');
+
+            initializeModel(select.value);
+
+
+        }
+        function everything() {
+
+            initializeModels();
+
+            initializeDefaultModel();
+        }
+
+    </script>
+
+    <div class="container">
+        <h1>Multi-way calculator</h1>
+
+        <label for="slc-models">Select A Model For Calculation</label>
+        <select class="form-control" id="slc-models" onchange="initializeModel(event.value)">
+        </select>
+
+
+        <h2>Calculate <span id="spnTitle"></span></h2>
+        <form class="container">
+            <div id="divParameters" class="">
+
+            </div>
+        </form>
+    </div>
+
+    <script lang="js">everything()</script>
+
+</body>
+
+</html>

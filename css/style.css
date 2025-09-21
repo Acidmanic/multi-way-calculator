@@ -1,0 +1,11 @@
+.output-box {
+    width: 48px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    visibility: hidden;
+}
+
+.output-box-calculating {
+    visibility: visible;
+}
